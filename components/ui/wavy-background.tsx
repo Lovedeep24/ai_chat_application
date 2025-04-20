@@ -3,6 +3,9 @@ import { cn } from "@/lib/utils";
 import React, { useEffect, useRef, useState } from "react";
 import { createNoise3D } from "simplex-noise";
 import { MagneticButton } from "@/components/ui/magnetic-button";
+import { MessagesSquare } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+
 export const WavyBackground = ({
   children,
   className,
@@ -26,6 +29,7 @@ export const WavyBackground = ({
   waveOpacity?: number;
   [key: string]: any;
 }) => {
+  const router = useRouter();
   const noise = createNoise3D();
   let w: number,
     h: number,
@@ -128,9 +132,10 @@ export const WavyBackground = ({
         {children}
        
         <MagneticButton >
-        <button
-        className="bg-white/10 backdrop-blur-md mt-10 border border-white/20 text-white px-10 py-4 text-lg rounded-full shadow-lg hover:bg-white/20 transition duration-300">
-            Start Discussion
+        <button  onClick={() => router.push('/chat')}
+        className="bg-white/10 backdrop-blur-md flex gap-3 mt-10 border border-white/20 text-white px-10 py-4 text-lg rounded-full shadow-lg hover:bg-white/20 transition duration-300">
+            <MessagesSquare className="mt-0.5" />
+           Start Discussion
           </button>
         </MagneticButton>
         </div>
