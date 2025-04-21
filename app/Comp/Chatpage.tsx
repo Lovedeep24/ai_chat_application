@@ -1,7 +1,10 @@
 'use client';
 import { useEffect, useRef, useState, FormEvent } from 'react';
-import { Paperclip, Mic, CornerDownLeft, Trash2 } from 'lucide-react';
+import { CornerDownLeft, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { UserRoundIcon } from "lucide-react"
+
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import {
   ChatBubble,
   ChatBubbleAvatar,
@@ -81,17 +84,29 @@ export default function Chatpage() {
       })
     );
   };
+  const handleClearChat = () => {
+    setMessages([]);
+    setError(null);
+  };
 
   return (
     <div className='flex flex-col items-center min-h-screen  p-2 gap-5'>
         <div className="flex items-center justify-between p-4 bg-background rounded-lg w-[100%]">
           <h1 className="text-xl font-bold">Chat with AI</h1>
           <div className="flex items-center gap-2">
-            <Paperclip className="size-4" />
-            <Mic className="size-4" />
+          <Button variant="ghost" className="h-auto p-0 hover:bg-transparent">
+      <img
+        className="rounded-full"
+        src="https://originui.com/avatar.jpg"
+        alt="Profile image"
+        width={40}
+        height={40}
+        aria-hidden="true"
+      />
+    </Button>
           </div>
       </div>
-        <div className=" w-[70%]  bg-background rounded-lg  flex flex-col">
+        <div className=" md:w-[70%] w-[85%]  bg-background rounded-lg  flex flex-col">
           <div className="flex-1 overflow-y-auto ">
           <ChatMessageList> 
           {messages.length === 0 && !isLoading && !error && (
@@ -116,7 +131,7 @@ export default function Chatpage() {
                 className="h-8 w-8 shrink-0"
                 src={
                   message.sender === 'user'
-                    ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=64&h=64&q=80&crop=faces&fit=crop'
+                    ? 'https://originui.com/avatar.jpg'
                     : 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=64&h=64&q=80&crop=faces&fit=crop'
                 }
                 fallback={message.sender === 'user' ? 'US' : 'AI'}
@@ -151,13 +166,13 @@ export default function Chatpage() {
     <div className="p-4 fixed mb-10 bottom-0 left-0 bg-white w-full items-center flex justify-center z-50">
         <form
           onSubmit={handleSubmit}
-          className="relative rounded-lg p-2 w-[70%] bg-background border-2"
+          className="relative rounded-lg  w-[85%] md:w-[50%] bg-background overflow-hidden border-2"
         >
           <Textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder=" Start your discussion..."
-            className=" resize-none bg-background p-3 shadow-none"
+            className="text-lg resize-none bg-background p-3 shadow-none overflow-hidden focus:outline-none focus:ring-0 focus:border-0"
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
@@ -165,16 +180,24 @@ export default function Chatpage() {
               }
             }}
           />
-          <div className="flex items-center p-3 pt-0 mt-3 justify-between">
-            <Button className='bg-red-400 text-white gap-1' size="sm" variant="outline">
-              <Trash2 className="size-4" /> 
+         <div className="flex flex-col sm:flex-row items-stretch sm:items-center p-3 pt-0 mt-3 gap-2 sm:justify-between">
+            <Button
+              className="bg-red-400 text-white gap-1 w-full sm:w-auto hover:bg-red-500 hover:text-white"
+              size="sm"
+              variant="outline"
+              onClick={handleClearChat}
+            >
+              <Trash2 className="size-4" />
               Clear Chat
             </Button>
-            <Button type="submit" size="sm" className="ml-auto gap-1.5">
+            <Button
+              type="submit"
+              size="sm"
+              className="w-full sm:w-auto ml-0 sm:ml-auto gap-1.5"
+            >
               Send Message
               <CornerDownLeft className="size-3.5" />
             </Button>
-         
           </div>
         </form>
       </div>
