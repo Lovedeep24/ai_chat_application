@@ -36,7 +36,7 @@ export default function Chatpage() {
   // Generate a chatId (session scoped)
 
   useEffect(() => {
-    socketRef.current = new WebSocket('ws://localhost:3001/');
+    socketRef.current = new WebSocket('wss://web-socket-server-hyrt.onrender.com/');
 
     socketRef.current.onopen = () => {
       console.log('WebSocket connected');
@@ -78,6 +78,10 @@ export default function Chatpage() {
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
+    const generateChatId = () => {
+      return Math.random().toString(36).substring(2, 15); // Random alphanumeric string
+    };
+    const chatId = generateChatId();  // You can generate this dynamically or retrieve from user context
 
     const userMsg: Message = {
       id: messageIdRef.current++,
@@ -92,7 +96,7 @@ export default function Chatpage() {
 
     socketRef.current?.send(
       JSON.stringify({
-        chatId: 123,
+        chatId,   
         question: userMsg.content,
       })
     );
@@ -119,7 +123,7 @@ export default function Chatpage() {
       </div>
 
       <div className="md:w-[70%] w-[85%] bg-background rounded-lg flex flex-col">
-        <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto ">
           <ChatMessageList>
             {messages.length === 0 && !isLoading && !error && (
               <ChatBubble variant="received">
