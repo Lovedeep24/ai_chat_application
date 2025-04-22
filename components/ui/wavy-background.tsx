@@ -13,7 +13,7 @@ import { MagneticButton } from "@/components/ui/magnetic-button";
 import { MessagesSquare } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-interface WavyBackgroundProps {
+interface WavyBackgroundProps extends React.HTMLAttributes<HTMLDivElement> {
   children?: React.ReactNode;
   className?: string;
   containerClassName?: string;
@@ -23,7 +23,6 @@ interface WavyBackgroundProps {
   blur?: number;
   speed?: "slow" | "fast";
   waveOpacity?: number;
-  [key: string]: any;
 }
 
 export const WavyBackground: React.FC<WavyBackgroundProps> = ({
@@ -143,7 +142,7 @@ export const WavyBackground: React.FC<WavyBackgroundProps> = ({
         id="canvas"
         style={isSafari ? { filter: `blur(${blur}px)` } : {}}
       />
-      <div className={cn("relative z-10", className)} {...props}>
+   <div className={cn("relative z-10", className)} {...props}>
         {children}
         <MagneticButton>
           <button
