@@ -165,7 +165,7 @@ export default function Chatpage() {
           </ChatMessageList>
         </div>
       </div>
-      <div className="p-4 fixed mb-10 bottom-0 left-0 bg-white w-full items-center flex justify-center z-50">
+      <div className="p-4 fixed mb-10 bottom-0 left-0  w-full bg-transparent items-center flex justify-center z-50">
         <form
           onSubmit={handleSubmit}
           className="relative rounded-lg w-[85%] md:w-[50%] bg-background overflow-hidden border-2"
