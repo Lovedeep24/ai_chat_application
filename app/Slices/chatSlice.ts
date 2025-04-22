@@ -12,14 +12,13 @@ export interface ChatState {
   error: string | null;
 }
 
-// ✅ Initial state
+
 const initialState: ChatState = {
   messages: [],
   isLoading: false,
   error: null,
 };
 
-// ✅ Redux slice
 const chatSlice = createSlice({
   name: 'chat',
   initialState,

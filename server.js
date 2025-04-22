@@ -1,38 +1,53 @@
-// import WebSocket from 'ws';
-import { WebSocketServer } from 'ws';
-import http from 'http';
-import { v4 as uuidv4 } from 'uuid';
-import { getEducationalAnswer } from './lib/server/educationalChat.js'; //
-import dotenv from 'dotenv';
+import axios from 'axios';
+const chatHistories = {};
+export async function getEducationalAnswer(chatId,question) {
+  if (!chatId || !question) {
+    throw new Error('Missing userId or question');
+  }
 
-dotenv.config();
+  const apiKey = process.env.MISTRAL_API_KEY;
 
-const server = http.createServer();
-const wss = new WebSocketServer({ server, path: '/api/ask' });
+  if (!chatHistories[chatId]) {
+    chatHistories[chatId] = [
+      {
+        role: 'system',
+        content:
+        `You are an AI tutor participating in an educational discussion. Always answer in a compact paragraph with no line breaks, no bullet points, and no numbered lists. Do not format responses with 1., 2.,  \n1 or anything like \n. Write naturally, using complete sentences. Also if chat is asked away from the educational discussion, you should say "I am not sure about that, but I can help you with educational questions."`,
+      
+      },
+    ];
+  }
 
-wss.on('connection', (ws) => {
-  console.log('Client connected');
-  const chatId = uuidv4();
-
-  ws.on('message', async (message) => {
-    const question = message.toString();
-    console.log('Received:', question);
-
-    try {
-      const reply = await getEducationalAnswer(chatId, question);
-      ws.send(JSON.stringify({ content: reply }));
-    } catch (error) {
-      console.error('Error responding to client:', error.message);
-      ws.send(JSON.stringify({ content: 'Sorry, something went wrong while fetching the answer.' }));
-    }
+  chatHistories[chatId].push({
+    role: 'user',
+    content: question,
   });
 
-  ws.on('close', () => {
-    console.log(`Client disconnected (Chat ID: ${chatId})`);
-  });
-});
+  try {
+    const response = await axios.post(
+      'https://api.mistral.ai/v1/chat/completions',
+      {
+        model: 'mistral-tiny',
+        messages: chatHistories[chatId],
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
 
-const PORT = 3001;
-server.listen(PORT, () => {
-  console.log(`WebSocket server running on ws://localhost:${PORT}/api/ask`);
-});
+    const botReply = response.data.choices[0].message.content;
+
+    chatHistories[chatId].push({
+      role: 'assistant',
+      content: botReply,
+    });
+
+    return botReply;
+  } catch (err) {
+    console.error('Mistral API error:', err.response?.data || err.message);
+    throw new Error('Failed to get response from Mistral');
+  }
+}
