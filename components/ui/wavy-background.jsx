@@ -3,14 +3,13 @@ import React, {
   useEffect,
   useRef,
   useState,
-  useCallback,
-  useMemo,
 } from "react";
 import { createNoise3D } from "simplex-noise";
 import { cn } from "@/lib/utils";
 import { MagneticButton } from "@/components/ui/magnetic-button";
 import { MessagesSquare } from "lucide-react";
 import { useRouter } from "next/navigation";
+
 export const WavyBackground = ({
   children,
   className,
@@ -22,29 +21,13 @@ export const WavyBackground = ({
   speed = "fast",
   waveOpacity = 0.5,
   ...props
-}: {
-  children?: any;
-  className?: string;
-  containerClassName?: string;
-  colors?: string[];
-  waveWidth?: number;
-  backgroundFill?: string;
-  blur?: number;
-  speed?: "slow" | "fast";
-  waveOpacity?: number;
-  [key: string]: any;
 }) => {
   const router = useRouter();
 
   const noise = createNoise3D();
-  let w: number,
-    h: number,
-    nt: number,
-    i: number,
-    x: number,
-    ctx: any,
-    canvas: any;
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  let w, h, nt, i, x, ctx, canvas;
+  const canvasRef = useRef(null);
+
   const getSpeed = () => {
     switch (speed) {
       case "slow":
@@ -78,22 +61,23 @@ export const WavyBackground = ({
     "#e879f9",
     "#22d3ee",
   ];
-  const drawWave = (n: number) => {
+
+  const drawWave = (n) => {
     nt += getSpeed();
     for (i = 0; i < n; i++) {
       ctx.beginPath();
       ctx.lineWidth = waveWidth || 50;
       ctx.strokeStyle = waveColors[i % waveColors.length];
       for (x = 0; x < w; x += 5) {
-        var y = noise(x / 800, 0.3 * i, nt) * 100;
-        ctx.lineTo(x, y + h * 0.5); // adjust for height, currently at 50% of the container
+        const y = noise(x / 800, 0.3 * i, nt) * 100;
+        ctx.lineTo(x, y + h * 0.5);
       }
       ctx.stroke();
       ctx.closePath();
     }
   };
 
-  let animationId: number;
+  let animationId;
   const render = () => {
     ctx.fillStyle = backgroundFill || "black";
     ctx.globalAlpha = waveOpacity || 0.5;
@@ -111,7 +95,6 @@ export const WavyBackground = ({
 
   const [isSafari, setIsSafari] = useState(false);
   useEffect(() => {
-    // I'm sorry but i have got to support it on safari.
     setIsSafari(
       typeof window !== "undefined" &&
         navigator.userAgent.includes("Safari") &&
@@ -130,11 +113,9 @@ export const WavyBackground = ({
         className="absolute inset-0 z-0"
         ref={canvasRef}
         id="canvas"
-        style={{
-          ...(isSafari ? { filter: `blur(${blur}px)` } : {}),
-        }}
+        style={isSafari ? { filter: `blur(${blur}px)` } : {}}
       ></canvas>
-         <div className={cn("relative z-10", className)} {...props}>
+      <div className={cn("relative z-10", className)} {...props}>
         {children}
         <MagneticButton>
           <button
