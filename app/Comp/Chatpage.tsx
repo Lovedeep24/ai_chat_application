@@ -1,10 +1,18 @@
 'use client';
 import { useEffect, useRef, useState, FormEvent } from 'react';
+import { Toaster } from "@/components/ui/sonner"
+import { toast } from 'sonner';
 import { CornerDownLeft, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { UserRoundIcon } from "lucide-react"
+import { useSelector, useDispatch } from 'react-redux';
+import type { RootState } from '../store';
+import {
+  addMessage,
+  clearMessages,
+  setLoading,
+  setError,
+} from '../Slices/chatSlice';
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import {
   ChatBubble,
   ChatBubbleAvatar,
@@ -20,63 +28,59 @@ type Message = {
 };
 
 export default function Chatpage() {
-  const socketRef = useRef<WebSocket | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
+  const dispatch = useDispatch();
+  const { messages, isLoading, error } = useSelector((state: RootState) => state.chat);
+  const socketRef = useRef<WebSocket | null>(null);;
   const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const messageIdRef = useRef(1);
 
   useEffect(() => {
     socketRef.current = new WebSocket('ws://localhost:3001/api/ask');
-
+  
     socketRef.current.onopen = () => {
       console.log('WebSocket connected');
     };
-
+  
     socketRef.current.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      setMessages((prev) => [
-        ...prev,
-        {
+      dispatch(
+        addMessage({
           id: messageIdRef.current++,
           content: data.content,
           sender: 'ai',
-        },
-      ]);
-      setIsLoading(false);
-    };
+        })
+      );
+      dispatch(setLoading(false));
 
+    };
+  
     socketRef.current.onerror = (e) => {
       console.error('WebSocket error:', e);
-      setError('Something went wrong with WebSocket.');
-      setIsLoading(false);
-    };
+      // dispatch(setError('Something went wrong with WebSocket.(Try Refershing'));
+      toast.error('Something went wrong with WebSocket.(Try Refershing)');
+      dispatch(setLoading(false));
 
-    socketRef.current.onclose = () => {
-      console.log('WebSocket closed');
     };
-
-    return () => {
-      socketRef.current?.close();
-    };
+  
+    return () => socketRef.current?.close();
   }, []);
+  
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
-
+  
     const userMsg: Message = {
       id: messageIdRef.current++,
       content: input,
       sender: 'user',
     };
-
-    setMessages((prev) => [...prev, userMsg]);
+  
+    dispatch(addMessage(userMsg));
     setInput('');
-    setIsLoading(true);
-    setError(null);
-
+    dispatch(setLoading(true));
+    dispatch(setError(null));
+  
     socketRef.current?.send(
       JSON.stringify({
         type: 'chat',
@@ -84,15 +88,15 @@ export default function Chatpage() {
       })
     );
   };
+  
   const handleClearChat = () => {
-    setMessages([]);
-    setError(null);
+    dispatch(clearMessages());
   };
-
+   
   return (
     <div className='flex flex-col items-center min-h-screen  p-2 gap-5'>
         <div className="flex items-center justify-between p-4 bg-background rounded-lg w-[100%]">
-          <h1 className="text-xl font-bold">Chat with AI</h1>
+          <h1 className="text-xl font-bold">BrainWaveAI</h1>
           <div className="flex items-center gap-2">
           <Button variant="ghost" className="h-auto p-0 hover:bg-transparent">
       <img
@@ -122,7 +126,7 @@ export default function Chatpage() {
             </ChatBubble>
           )}
 
-          {messages.map((message) => (
+          {messages.map((message : Message) => (
             <ChatBubble
               key={message.id}
               variant={message.sender === 'user' ? 'sent' : 'received'}
@@ -143,7 +147,7 @@ export default function Chatpage() {
               </ChatBubbleMessage>
             </ChatBubble>
           ))}
-
+<Toaster position='top-center' />
           {isLoading && (
             <ChatBubble variant="received">
               <ChatBubbleAvatar

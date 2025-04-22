@@ -26,7 +26,7 @@ export const webSocket = (url) => {
       console.log('WebSocket closed');
     };
 
-    // Cleanup on unmount
+
     return () => {
       socketRef.current?.close();
     };
