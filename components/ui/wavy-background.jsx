@@ -13,7 +13,7 @@ import { useRouter } from "next/navigation";
 export const WavyBackground = ({
   children,
   className,
-  containerClassName,
+  containerClassName = "",
   colors,
   waveWidth,
   backgroundFill,
