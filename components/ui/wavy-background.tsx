@@ -1,18 +1,13 @@
 "use client";
 
-import React, {
-  useEffect,
-  useRef,
-  useState,
-  useCallback,
-  useMemo,
-} from "react";
+import React, { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { createNoise3D } from "simplex-noise";
 import { MagneticButton } from "@/components/ui/magnetic-button";
 import { MessagesSquare } from "lucide-react";
 import { useRouter } from "next/navigation";
 
+// Define the interface for the props
 interface WavyBackgroundProps extends React.HTMLAttributes<HTMLDivElement> {
   children?: React.ReactNode;
   className?: string;
@@ -30,13 +25,13 @@ export const WavyBackground: React.FC<WavyBackgroundProps> = ({
   className,
   containerClassName,
   colors,
-  waveWidth = 50,
-  backgroundFill = "black",
+  waveWidth = 2,
+  backgroundFill = "transparent",
   blur = 10,
   speed = "fast",
   waveOpacity = 0.5,
   ...props
-}) => {
+}: WavyBackgroundProps) => {
   const router = useRouter();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>(0);
@@ -142,7 +137,7 @@ export const WavyBackground: React.FC<WavyBackgroundProps> = ({
         id="canvas"
         style={isSafari ? { filter: `blur(${blur}px)` } : {}}
       />
-   <div className={cn("relative z-10", className)} {...props}>
+      <div className={cn("relative z-10", className)} {...props}>
         {children}
         <MagneticButton>
           <button
