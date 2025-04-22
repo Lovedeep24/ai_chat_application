@@ -7,7 +7,6 @@ import { MagneticButton } from "@/components/ui/magnetic-button";
 import { MessagesSquare } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-// Define the interface for the props
 interface WavyBackgroundProps extends React.HTMLAttributes<HTMLDivElement> {
   children?: React.ReactNode;
   className?: string;
@@ -20,7 +19,7 @@ interface WavyBackgroundProps extends React.HTMLAttributes<HTMLDivElement> {
   waveOpacity?: number;
 }
 
-export const WavyBackground: React.FC<WavyBackgroundProps> = ({
+const WavyBackground: React.FC<WavyBackgroundProps> = ({
   children,
   className,
   containerClassName,
@@ -31,7 +30,7 @@ export const WavyBackground: React.FC<WavyBackgroundProps> = ({
   speed = "fast",
   waveOpacity = 0.5,
   ...props
-}: WavyBackgroundProps) => {
+}) => {
   const router = useRouter();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>(0);
@@ -152,3 +151,5 @@ export const WavyBackground: React.FC<WavyBackgroundProps> = ({
     </div>
   );
 };
+
+export default WavyBackground;
