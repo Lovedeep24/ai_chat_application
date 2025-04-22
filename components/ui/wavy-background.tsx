@@ -1,23 +1,19 @@
 "use client";
+
+import React, {
+  useEffect,
+  useRef,
+  useState,
+  useCallback,
+  useMemo,
+} from "react";
 import { cn } from "@/lib/utils";
-import React, { useEffect, useRef, useState } from "react";
 import { createNoise3D } from "simplex-noise";
 import { MagneticButton } from "@/components/ui/magnetic-button";
 import { MessagesSquare } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-export const WavyBackground = ({
-  children,
-  className,
-  containerClassName,
-  colors,
-  waveWidth,
-  backgroundFill,
-  blur = 10,
-  speed = "fast",
-  waveOpacity = 0.5,
-  ...props
-}: {
+interface WavyBackgroundProps {
   children?: React.ReactNode;
   className?: string;
   containerClassName?: string;
@@ -28,34 +24,44 @@ export const WavyBackground = ({
   speed?: "slow" | "fast";
   waveOpacity?: number;
   [key: string]: any;
+}
+
+export const WavyBackground: React.FC<WavyBackgroundProps> = ({
+  children,
+  className,
+  containerClassName,
+  colors,
+  waveWidth = 50,
+  backgroundFill = "black",
+  blur = 10,
+  speed = "fast",
+  waveOpacity = 0.5,
+  ...props
 }) => {
   const router = useRouter();
-  const noise = createNoise3D();
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [isSafari, setIsSafari] = useState(false);
   const animationRef = useRef<number>(0);
+  const [isSafari, setIsSafari] = useState(false);
 
+  const noise = useMemo(() => createNoise3D(), []);
 
-  const getSpeed = () => {
-    switch (speed) {
-      case "slow":
-        return 0.001;
-      case "fast":
-        return 0.002;
-      default:
-        return 0.001;
-    }
-  };
+  const waveColors = useMemo(
+    () =>
+      colors ?? [
+        "#38bdf8",
+        "#818cf8",
+        "#c084fc",
+        "#e879f9",
+        "#22d3ee",
+      ],
+    [colors]
+  );
 
-  const waveColors = colors ?? [
-    "#38bdf8",
-    "#818cf8",
-    "#c084fc",
-    "#e879f9",
-    "#22d3ee",
-  ];
+  const getSpeed = useCallback(() => {
+    return speed === "slow" ? 0.001 : 0.002;
+  }, [speed]);
 
-  const init = () => {
+  const init = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -71,7 +77,7 @@ export const WavyBackground = ({
       nt += getSpeed();
       for (let i = 0; i < n; i++) {
         ctx.beginPath();
-        ctx.lineWidth = waveWidth || 50;
+        ctx.lineWidth = waveWidth;
         ctx.strokeStyle = waveColors[i % waveColors.length];
         for (let x = 0; x < w; x += 5) {
           const y = noise(x / 800, 0.3 * i, nt) * 100;
@@ -83,8 +89,8 @@ export const WavyBackground = ({
     };
 
     const render = () => {
-      ctx.fillStyle = backgroundFill || "black";
-      ctx.globalAlpha = waveOpacity || 0.5;
+      ctx.fillStyle = backgroundFill;
+      ctx.globalAlpha = waveOpacity;
       ctx.fillRect(0, 0, w, h);
       drawWave(5);
       animationRef.current = requestAnimationFrame(render);
@@ -100,20 +106,21 @@ export const WavyBackground = ({
 
     window.addEventListener("resize", handleResize);
 
+    // Cleanup
     return () => {
       window.removeEventListener("resize", handleResize);
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
       }
     };
-  };
+  }, [blur, backgroundFill, getSpeed, waveColors, waveWidth, waveOpacity, noise]);
 
   useEffect(() => {
     const cleanup = init();
     return () => {
       if (cleanup) cleanup();
     };
-  }, [waveWidth, waveOpacity, colors]);
+  }, [init]);
 
   useEffect(() => {
     setIsSafari(
@@ -134,10 +141,8 @@ export const WavyBackground = ({
         className="absolute inset-0 z-0"
         ref={canvasRef}
         id="canvas"
-        style={{
-          ...(isSafari ? { filter: `blur(${blur}px)` } : {}),
-        }}
-      ></canvas>
+        style={isSafari ? { filter: `blur(${blur}px)` } : {}}
+      />
       <div className={cn("relative z-10", className)} {...props}>
         {children}
         <MagneticButton>
