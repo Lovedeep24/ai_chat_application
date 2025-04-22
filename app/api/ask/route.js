@@ -1,4 +1,4 @@
-import { getEducationalAnswer } from '@/lib/server/educationalChat';
+import { getEducationalAnswer } from '../../../WebSocketServer/educationalChat.js';
 
 export async function POST(request) {
   try {
