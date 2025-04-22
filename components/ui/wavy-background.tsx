@@ -3,8 +3,8 @@ import { cn } from "@/lib/utils";
 import React, { useEffect, useRef, useState } from "react";
 import { createNoise3D } from "simplex-noise";
 import { MagneticButton } from "@/components/ui/magnetic-button";
-import { MessagesSquare } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { MessagesSquare } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export const WavyBackground = ({
   children,
@@ -31,8 +31,9 @@ export const WavyBackground = ({
 }) => {
   const router = useRouter();
   const noise = createNoise3D();
-  let w: number, h: number, nt: number, i: number, x: number, ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement;
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [isSafari, setIsSafari] = useState(false);
+  const animationRef = useRef<number>();
 
   const getSpeed = () => {
     switch (speed) {
@@ -45,21 +46,6 @@ export const WavyBackground = ({
     }
   };
 
-  const init = () => {
-    canvas = canvasRef.current!;
-    ctx = canvas.getContext("2d")!;
-    w = ctx.canvas.width = window.innerWidth;
-    h = ctx.canvas.height = window.innerHeight;
-    ctx.filter = `blur(${blur}px)`;
-    nt = 0;
-    window.onresize = () => {
-      w = ctx.canvas.width = window.innerWidth;
-      h = ctx.canvas.height = window.innerHeight;
-      ctx.filter = `blur(${blur}px)`;
-    };
-    render();
-  };
-
   const waveColors = colors ?? [
     "#38bdf8",
     "#818cf8",
@@ -68,41 +54,67 @@ export const WavyBackground = ({
     "#22d3ee",
   ];
 
-  const drawWave = (n: number) => {
-    nt += getSpeed();
-    for (i = 0; i < n; i++) {
-      ctx.beginPath();
-      ctx.lineWidth = waveWidth || 50;
-      ctx.strokeStyle = waveColors[i % waveColors.length];
-      for (x = 0; x < w; x += 5) {
-        var y = noise(x / 800, 0.3 * i, nt) * 100;
-        ctx.lineTo(x, y + h * 0.5); // adjust for height, currently at 50% of the container
+  const init = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let w = (ctx.canvas.width = window.innerWidth);
+    let h = (ctx.canvas.height = window.innerHeight);
+    ctx.filter = `blur(${blur}px)`;
+    let nt = 0;
+
+    const drawWave = (n: number) => {
+      nt += getSpeed();
+      for (let i = 0; i < n; i++) {
+        ctx.beginPath();
+        ctx.lineWidth = waveWidth || 50;
+        ctx.strokeStyle = waveColors[i % waveColors.length];
+        for (let x = 0; x < w; x += 5) {
+          const y = noise(x / 800, 0.3 * i, nt) * 100;
+          ctx.lineTo(x, y + h * 0.5);
+        }
+        ctx.stroke();
+        ctx.closePath();
       }
-      ctx.stroke();
-      ctx.closePath();
-    }
-  };
-
-  let animationId: number;
-  const render = () => {
-    ctx.fillStyle = backgroundFill || "black";
-    ctx.globalAlpha = waveOpacity || 0.5;
-    ctx.fillRect(0, 0, w, h);
-    drawWave(5);
-    animationId = requestAnimationFrame(render);
-  };
-
-  useEffect(() => {
-    init();
-    return () => {
-      cancelAnimationFrame(animationId);
-      window.onresize = null; // Clean up resize handler
     };
-  }, [waveWidth, waveOpacity, colors]); // Add necessary dependencies for reactivity
 
-  const [isSafari, setIsSafari] = useState(false);
+    const render = () => {
+      ctx.fillStyle = backgroundFill || "black";
+      ctx.globalAlpha = waveOpacity || 0.5;
+      ctx.fillRect(0, 0, w, h);
+      drawWave(5);
+      animationRef.current = requestAnimationFrame(render);
+    };
+
+    render();
+
+    const handleResize = () => {
+      w = ctx.canvas.width = window.innerWidth;
+      h = ctx.canvas.height = window.innerHeight;
+      ctx.filter = `blur(${blur}px)`;
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  };
+
   useEffect(() => {
-    // I'm sorry but i have got to support it on safari.
+    const cleanup = init();
+    return () => {
+      if (cleanup) cleanup();
+    };
+  }, [waveWidth, waveOpacity, colors]);
+
+  useEffect(() => {
     setIsSafari(
       typeof window !== "undefined" &&
         navigator.userAgent.includes("Safari") &&
@@ -129,7 +141,7 @@ export const WavyBackground = ({
         {children}
         <MagneticButton>
           <button
-            onClick={() => router.push('/chat')}
+            onClick={() => router.push("/chat")}
             className="bg-white/10 backdrop-blur-md flex gap-3 mt-10 border border-white/20 text-white px-10 py-4 text-lg rounded-full shadow-lg hover:bg-white/20 transition duration-300"
           >
             <MessagesSquare className="mt-0.5" />
