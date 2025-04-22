@@ -19,7 +19,7 @@ interface WavyBackgroundProps extends React.HTMLAttributes<HTMLDivElement> {
   waveOpacity?: number;
 }
 
-const WavyBackground: React.FC<WavyBackgroundProps> = ({
+export const WavyBackground: React.FC<WavyBackgroundProps> = ({
   children,
   className,
   containerClassName,
