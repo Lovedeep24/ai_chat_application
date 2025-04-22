@@ -33,7 +33,8 @@ export const WavyBackground = ({
   const noise = createNoise3D();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isSafari, setIsSafari] = useState(false);
-  const animationRef = useRef<number>();
+  const animationRef = useRef<number>(0);
+
 
   const getSpeed = () => {
     switch (speed) {
