@@ -51,21 +51,23 @@ export default function Chatpage() {
         })
       );
       dispatch(setLoading(false));
-
     };
   
     socketRef.current.onerror = (e) => {
       console.error('WebSocket error:', e);
-      // dispatch(setError('Something went wrong with WebSocket.(Try Refershing'));
-      toast.error('Something went wrong with WebSocket.(Try Refershing)');
+      toast.error('Something went wrong with WebSocket. (Try Refreshing)');
       dispatch(setLoading(false));
-
+      dispatch(setError('Something went wrong with WebSocket.'));
     };
   
-    return () => socketRef.current?.close();
-  }, []);
+    // Cleanup on component unmount
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.close();
+      }
+    };
+  }, [dispatch]);
   
-
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
@@ -125,7 +127,7 @@ export default function Chatpage() {
               </ChatBubbleMessage>
             </ChatBubble>
           )}
-
+<Toaster position='top-center' />
           {messages.map((message : Message) => (
             <ChatBubble
               key={message.id}
@@ -147,7 +149,6 @@ export default function Chatpage() {
               </ChatBubbleMessage>
             </ChatBubble>
           ))}
-<Toaster position='top-center' />
           {isLoading && (
             <ChatBubble variant="received">
               <ChatBubbleAvatar
