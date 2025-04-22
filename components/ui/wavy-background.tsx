@@ -18,7 +18,7 @@ export const WavyBackground = ({
   waveOpacity = 0.5,
   ...props
 }: {
-  children?: any;
+  children?: React.ReactNode;
   className?: string;
   containerClassName?: string;
   colors?: string[];
@@ -31,14 +31,9 @@ export const WavyBackground = ({
 }) => {
   const router = useRouter();
   const noise = createNoise3D();
-  let w: number,
-    h: number,
-    nt: number,
-    i: number,
-    x: number,
-    ctx: any,
-    canvas: any;
+  let w: number, h: number, nt: number, i: number, x: number, ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement;
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
   const getSpeed = () => {
     switch (speed) {
       case "slow":
@@ -51,13 +46,13 @@ export const WavyBackground = ({
   };
 
   const init = () => {
-    canvas = canvasRef.current;
-    ctx = canvas.getContext("2d");
+    canvas = canvasRef.current!;
+    ctx = canvas.getContext("2d")!;
     w = ctx.canvas.width = window.innerWidth;
     h = ctx.canvas.height = window.innerHeight;
     ctx.filter = `blur(${blur}px)`;
     nt = 0;
-    window.onresize = function () {
+    window.onresize = () => {
       w = ctx.canvas.width = window.innerWidth;
       h = ctx.canvas.height = window.innerHeight;
       ctx.filter = `blur(${blur}px)`;
@@ -72,6 +67,7 @@ export const WavyBackground = ({
     "#e879f9",
     "#22d3ee",
   ];
+
   const drawWave = (n: number) => {
     nt += getSpeed();
     for (i = 0; i < n; i++) {
@@ -100,8 +96,9 @@ export const WavyBackground = ({
     init();
     return () => {
       cancelAnimationFrame(animationId);
+      window.onresize = null; // Clean up resize handler
     };
-  }, []);
+  }, [waveWidth, waveOpacity, colors]); // Add necessary dependencies for reactivity
 
   const [isSafari, setIsSafari] = useState(false);
   useEffect(() => {
@@ -130,16 +127,16 @@ export const WavyBackground = ({
       ></canvas>
       <div className={cn("relative z-10", className)} {...props}>
         {children}
-       
-        <MagneticButton >
-        <button  onClick={() => router.push('/chat')}
-        className="bg-white/10 backdrop-blur-md flex gap-3 mt-10 border border-white/20 text-white px-10 py-4 text-lg rounded-full shadow-lg hover:bg-white/20 transition duration-300">
+        <MagneticButton>
+          <button
+            onClick={() => router.push('/chat')}
+            className="bg-white/10 backdrop-blur-md flex gap-3 mt-10 border border-white/20 text-white px-10 py-4 text-lg rounded-full shadow-lg hover:bg-white/20 transition duration-300"
+          >
             <MessagesSquare className="mt-0.5" />
-           Start Discussion
+            Start Discussion
           </button>
         </MagneticButton>
-        </div>
-        
       </div>
+    </div>
   );
 };
